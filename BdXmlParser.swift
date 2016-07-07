@@ -12,11 +12,8 @@ import Foundation
 class BbXmlParser : NSObject,NSXMLParserDelegate
 {
     var parser = NSXMLParser()
-    //    var arrStack = Array()
     var arrStack:[AnyObject]!
-    //    var elements = NSMutableDictionary()
     var elements:AnyObject!
-    //    var textInProgress = NSMutableString()
     var textInProgress:String!
     
     
