@@ -9,48 +9,48 @@
 
 
 import Foundation
- class BbXmlParser : NSObject,NSXMLParserDelegate
+class BbXmlParser : NSObject,NSXMLParserDelegate
 {
     var parser = NSXMLParser()
-    var arrStack = NSMutableArray()
-    var elements = NSMutableDictionary()
-    var textInProgress = NSMutableString()
+    var arrStack:[AnyObject]!
+    var elements:AnyObject!
+    var textInProgress:String!
     
     
-     override init()
-     {
-     }
-    
+    override init()
+    {
+    }
     
     //Pass Xml Data and Fetch Dictionary From it.
     func getdictionaryFromXmlData(xmldata:NSData) -> NSDictionary
     {
-        self.arrStack.addObject(self.elements)
+        //        self.arrStack.addObject(self.elements)
+        self.arrStack.append(self.elements)
         self.parser  = NSXMLParser.init(data: xmldata)
         self.parser.delegate = self
         self.parser.parse()
         let dictResponse = self.arrStack[0] as! NSDictionary
         return dictResponse
     }
-   
+    
     //Pass XmlString and Fetch Dictionary From it.
     //We need to initially convert String to Data
     func getdictionaryFromXmlString(xmldata:String) -> NSDictionary
     {
-      
+        
         let  data = xmldata.dataUsingEncoding(NSUTF8StringEncoding)
         return self.getdictionaryFromXmlData(data!)
-
+        
     }
-
     
-// MARK: XML Delegate Methods
+    
+    // MARK: XML Delegate Methods
     
     func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String])
     {
         //Create dictionary for currnt Level
-        let parentDict = arrStack.lastObject as! NSMutableDictionary
-
+        let parentDict = arrStack.last
+        
         //Create Child dict and Add attributes dict in to that
         
         let childDict = NSMutableDictionary()
@@ -58,55 +58,63 @@ import Foundation
         
         //check any item for same Node Exist?
         //if there than we need to create array for same
-        let existingValue = parentDict.objectForKey(elementName)
+        let existingValue = parentDict![elementName]
+        
         if (existingValue != nil)
         {
-            var array  = NSMutableArray()
+            var array:[AnyObject] = Array()
+            
             if existingValue is NSMutableArray
             {
                 //use alreaddy created array
-                array = existingValue as! NSMutableArray
+                array = existingValue as! [AnyObject]
             }
             else
             {
                 //replace child dict to array of alreaddy created item so managing array
-                array.addObject(existingValue!)
-                parentDict.setValue(array, forKey: elementName)
+                //array.addObject(existingValue!)   // Harshit
+                array.append(existingValue!!)
+                //parentDict!.setValue(array, forKey: elementName)  // Harshit
+                parentDict?.setValue(array, forKey: elementName)
             }
             
-            array.addObject(childDict)
+            //array.addObject(childDict) // Harshit
+            array.append(childDict)
         }
         else
         {
             //No current value update dictionary
-            parentDict.setValue(childDict, forKey: elementName)
+            //parentDict.setValue(childDict, forKey: elementName) // Harshit
+            parentDict?.setValue(childDict, forKey: elementName)
         }
-       //update stack
-        arrStack.addObject(childDict)
+        //update stack
+        //        arrStack.addObject(childDict) // Harshit
+        arrStack.append(childDict)
         
     }
     
     func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?)
     {
         //update parent dict with text info i.e /n
-        let dictInProgress = arrStack.lastObject as! NSMutableDictionary
-            // Set the text property can remove this but apple recommending this
-
-        if self.textInProgress.length>0 {
-            dictInProgress.setValue(textInProgress, forKey: "text")
-            textInProgress = NSMutableString()
+        let dictInProgress = arrStack.last
+        // Set the text property can remove this but apple recommending this
+        
+        if self.textInProgress.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
+            
+            //            dictInProgress.setValue(textInProgress, forKey: "text")
+            dictInProgress?.setValue(textInProgress, forKey: "text")
+            //textInProgress = NSMutableString()    // Harshit
+            textInProgress = ""
         }
         //Remove current node
-        arrStack.removeLastObject()
-        
+        //arrStack.removeLastObject()   // Harshit
+        arrStack.removeLast()
     }
     
     
     func parser(parser: NSXMLParser, foundCharacters string: String)
     {
-        textInProgress.appendString(string)
+        //        textInProgress.appendString(string)   // Harshit
+        textInProgress = textInProgress + string
     }
-    
-    
-
 }
